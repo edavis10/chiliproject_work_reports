@@ -28,18 +28,13 @@ module ChiliprojectWorkReports
             last_time_changed_to_backlog = issue.last_time_changed_to_backlog(journals_in_reverse)
             last_time_changed_from_backlog = issue.last_time_changed_from_backlog(journals_in_reverse)
 
-            time_spans << case
-                          when last_time_changed_to_backlog.present? && last_time_changed_from_backlog.present?
-                            last_time_changed_from_backlog.to_date - last_time_changed_to_backlog.to_date
-                          else
-                            # Never entered backlog
-                            nil
-                          end
+            if last_time_changed_to_backlog.present? && last_time_changed_from_backlog.present?
+              time_spans << last_time_changed_from_backlog.to_date - last_time_changed_to_backlog.to_date
+            end
+
             time_spans
           end
 
-          # Toss issues that never entered backlog
-          backlog_durations.compact!
           total_time = backlog_durations.sum
           number_of_issues = backlog_durations.length
           return 0 if number_of_issues == 0
