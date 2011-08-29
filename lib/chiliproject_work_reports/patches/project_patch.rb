@@ -21,8 +21,6 @@ module ChiliprojectWorkReports
           return 0 if issues.count == 0
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_backlog_configured?
 
-          backlog_issue_status = IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["backlog"]["status"])
-          
           backlog_durations = issues.inject([]) do |time_spans, issue|
             currently_in_backlog = issue.status == backlog_issue_status
 
@@ -72,6 +70,10 @@ module ChiliprojectWorkReports
           rescue IndexError
             false
           end
+        end
+
+        def backlog_issue_status
+          @backlog_issue_status ||= IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["backlog"]["status"])
         end
       end
     end
