@@ -22,19 +22,17 @@ module ChiliprojectWorkReports
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_backlog_configured?
 
           backlog_durations = issues.inject([]) do |time_spans, issue|
-            currently_in_backlog = issue.status == backlog_issue_status
-
             journals_in_reverse = issue.journals.all(:order => 'version DESC',
                                                      :conditions => ["#{Journal.table_name}.created_at > ?", 30.days.ago])
 
             last_time_changed_to_backlog = issue.last_time_changed_to_backlog(journals_in_reverse)
 
-            unless currently_in_backlog
+            unless issue.currently_in_backlog?
               last_time_changed_from_backlog = issue.last_time_changed_from_backlog(journals_in_reverse)
             end
 
             time_spans << case
-                          when currently_in_backlog && last_time_changed_to_backlog.present?
+                          when issue.currently_in_backlog? && last_time_changed_to_backlog.present?
                             Date.today - last_time_changed_to_backlog.created_at.to_date
                           when last_time_changed_to_backlog.present? && last_time_changed_from_backlog.present?
                             last_time_changed_from_backlog.created_at.to_date - last_time_changed_to_backlog.created_at.to_date

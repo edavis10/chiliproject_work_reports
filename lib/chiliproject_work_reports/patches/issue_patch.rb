@@ -17,6 +17,10 @@ module ChiliprojectWorkReports
         def backlog_issue_status
           project.backlog_issue_status
         end
+
+        def currently_in_backlog?
+          status == backlog_issue_status
+        end
         
         # When was this issue last changed into the backlog status?
         def last_time_changed_to_backlog(journals)
