@@ -26,14 +26,9 @@ module ChiliprojectWorkReports
                                                      :conditions => ["#{Journal.table_name}.created_at > ?", 30.days.ago])
 
             last_time_changed_to_backlog = issue.last_time_changed_to_backlog(journals_in_reverse)
-
-            unless issue.currently_in_backlog?
-              last_time_changed_from_backlog = issue.last_time_changed_from_backlog(journals_in_reverse)
-            end
+            last_time_changed_from_backlog = issue.last_time_changed_from_backlog(journals_in_reverse)
 
             time_spans << case
-                          when issue.currently_in_backlog? && last_time_changed_to_backlog.present?
-                            Date.today - last_time_changed_to_backlog.to_date
                           when last_time_changed_to_backlog.present? && last_time_changed_from_backlog.present?
                             last_time_changed_from_backlog.to_date - last_time_changed_to_backlog.to_date
                           else
