@@ -27,11 +27,8 @@ module ChiliprojectWorkReports
             journals_in_reverse = issue.journals.all(:order => 'version DESC',
                                                      :conditions => ["#{Journal.table_name}.created_at > ?", 30.days.ago])
 
-            # Looking for From other to backlog: "status_id" => [other, backlog]
-            last_time_changed_to_backlog = journals_in_reverse.detect {|journal|
-              journal.changes["status_id"].present? &&
-              journal.changes["status_id"].last == backlog_issue_status.id
-            }
+            last_time_changed_to_backlog = issue.last_time_changed_to_backlog(journals_in_reverse)
+
             unless currently_in_backlog
               # Looking for From backlog to other: "status_id" => [backlog, other]
               last_time_changed_from_backlog = journals_in_reverse.detect {|journal|
@@ -60,6 +57,10 @@ module ChiliprojectWorkReports
           return (total_time / number_of_issues)
         end
 
+        def backlog_issue_status
+          @backlog_issue_status ||= IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["backlog"]["status"])
+        end
+
         private
 
         def kanban_backlog_configured?
@@ -70,10 +71,6 @@ module ChiliprojectWorkReports
           rescue IndexError
             false
           end
-        end
-
-        def backlog_issue_status
-          @backlog_issue_status ||= IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["backlog"]["status"])
         end
       end
     end

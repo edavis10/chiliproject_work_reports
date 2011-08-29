@@ -12,6 +12,9 @@ end
 require 'dispatcher'
 Dispatcher.to_prepare :chiliproject_work_reports do
 
+  require_dependency 'issue'
+  Issue.send(:include, ChiliprojectWorkReports::Patches::IssuePatch)
+
   require_dependency 'project'
   Project.send(:include, ChiliprojectWorkReports::Patches::ProjectPatch)
 end
