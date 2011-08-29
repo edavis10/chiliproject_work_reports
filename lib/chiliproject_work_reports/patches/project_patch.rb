@@ -33,9 +33,9 @@ module ChiliprojectWorkReports
 
             time_spans << case
                           when issue.currently_in_backlog? && last_time_changed_to_backlog.present?
-                            Date.today - last_time_changed_to_backlog.created_at.to_date
+                            Date.today - last_time_changed_to_backlog.to_date
                           when last_time_changed_to_backlog.present? && last_time_changed_from_backlog.present?
-                            last_time_changed_from_backlog.created_at.to_date - last_time_changed_to_backlog.created_at.to_date
+                            last_time_changed_from_backlog.to_date - last_time_changed_to_backlog.to_date
                           else
                             # Never entered backlog
                             nil

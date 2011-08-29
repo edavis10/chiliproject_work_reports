@@ -30,6 +30,9 @@ module ChiliprojectWorkReports
             journal.changes["status_id"].last == backlog_issue_status.id
           }
 
+          if last_time_changed_to_backlog.present?
+            last_time_changed_to_backlog.created_at
+          end
         end
 
         def last_time_changed_from_backlog(journals)
@@ -38,6 +41,10 @@ module ChiliprojectWorkReports
             journal.changes["status_id"].present? &&
             journal.changes["status_id"].first == backlog_issue_status.id
           }
+
+          if last_time_changed_from_backlog.present?
+            last_time_changed_from_backlog.created_at
+          end
         end
       end
     end
