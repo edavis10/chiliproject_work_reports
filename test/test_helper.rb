@@ -95,6 +95,21 @@ class ActiveSupport::TestCase
   end
 
   def reconfigure_plugin(configuration_change)
-    Settings['plugin_TODO'] = Setting['plugin_TODO'].merge(configuration_change)
+    Setting['plugin_chiliproject_work_reports'] = Setting['plugin_chiliproject_work_reports'].merge(configuration_change)
   end
+
+  def backlog_issue_status
+    @backlog_issue_status ||= IssueStatus.generate!(:name => 'Backlog')
+  end
+  
+  def configure_kanban_plugin
+    Setting['plugin_redmine_kanban'] = {
+      "panes" => {
+        "backlog" => {
+          "status" => backlog_issue_status.id.to_s
+        }
+      }
+    }
+  end
+  
 end
