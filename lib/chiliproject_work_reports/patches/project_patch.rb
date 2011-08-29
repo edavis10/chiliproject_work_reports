@@ -30,11 +30,7 @@ module ChiliprojectWorkReports
             last_time_changed_to_backlog = issue.last_time_changed_to_backlog(journals_in_reverse)
 
             unless currently_in_backlog
-              # Looking for From backlog to other: "status_id" => [backlog, other]
-              last_time_changed_from_backlog = journals_in_reverse.detect {|journal|
-                journal.changes["status_id"].present? &&
-                journal.changes["status_id"].first == backlog_issue_status.id
-              }
+              last_time_changed_from_backlog = issue.last_time_changed_from_backlog(journals_in_reverse)
             end
 
             time_spans << case
