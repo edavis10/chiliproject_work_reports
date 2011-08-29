@@ -55,6 +55,14 @@ module ChiliprojectWorkReports
             end
           end
         end
+
+        def days_in_backlog
+          if last_time_changed_to_backlog.present? && last_time_changed_from_backlog.present?
+            return last_time_changed_from_backlog.to_date - last_time_changed_to_backlog.to_date
+          else
+            nil
+          end
+        end
       end
     end
   end
