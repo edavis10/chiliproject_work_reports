@@ -29,15 +29,7 @@ module ChiliprojectWorkReports
         
         # When was this issue last changed into the backlog status?
         def last_time_changed_to_backlog
-          # Looking for From other to backlog: "status_id" => [other, backlog]
-          last_time_changed_to_backlog = last_30_days_of_journals_in_reverse.detect {|journal|
-            journal.changes["status_id"].present? &&
-            journal.changes["status_id"].last == backlog_issue_status.id
-          }
-
-          if last_time_changed_to_backlog.present?
-            last_time_changed_to_backlog.created_at
-          end
+          last_time_status_changed_to(backlog_issue_status)
         end
 
         def last_time_changed_from_backlog
