@@ -36,15 +36,19 @@ module ChiliprojectWorkReports
           if currently_in_backlog?
             Time.now
           else
-            # Looking for From backlog to other: "status_id" => [backlog, other]
-            last_time_changed_from_backlog = last_30_days_of_journals_in_reverse.detect {|journal|
-              journal.changes["status_id"].present? &&
-              journal.changes["status_id"].first == backlog_issue_status.id
-            }
+            last_time_status_changed_from(backlog_issue_status)
+          end
+        end
 
-            if last_time_changed_from_backlog.present?
-              last_time_changed_from_backlog.created_at
-            end
+        def last_time_status_changed_from(status)
+          # Looking for From status to other: "status_id" => [status, other]
+          last_time_changed = last_30_days_of_journals_in_reverse.detect {|journal|
+            journal.changes["status_id"].present? &&
+            journal.changes["status_id"].first == status.id
+          }
+
+          if last_time_changed.present?
+            last_time_changed.created_at
           end
         end
 
