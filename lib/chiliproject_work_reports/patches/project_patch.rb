@@ -17,11 +17,21 @@ module ChiliprojectWorkReports
         # Calculate the average number of days issues have spent in the Backlog status
         #
         # (Backlog status is provided from the Kanban configuration)
-        def backlog_time
+        #
+        # @param [Hash] options the options to use when calculating
+        # @option options [bool] :include_subprojects Include issues on subprojects?
+        def backlog_time(options={})
           return 0 if issues.count == 0
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_backlog_configured?
 
-          backlog_durations = issues.inject([]) do |time_spans, issue|
+          issues_to_check = if options.delete(:include_subprojects)
+                              project_ids = self_and_descendants.collect(&:id)
+                              Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
+                            else
+                              issues
+                            end
+
+          backlog_durations = issues_to_check.inject([]) do |time_spans, issue|
             time_spans << issue.days_in_backlog unless issue.days_in_backlog.nil?
             time_spans
           end
