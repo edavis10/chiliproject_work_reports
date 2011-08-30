@@ -1,0 +1,10 @@
+<% html_title(l(:work_reports_title)) %>
+<%= content_tag(:h1, l(:work_reports_title)) %>
+
+<div class="projects">
+  <% @projects.each do |project| %>
+    <div id="project_<%= project.id -%>">
+      <h2><%= h(project.name) %></h2>
+    </div>
+  <% end %>
+</div>

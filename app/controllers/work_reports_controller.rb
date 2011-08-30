@@ -3,6 +3,6 @@ class WorkReportsController < ApplicationController
   before_filter :authorize_global
 
   def index
-    render :text => 'Hello'
+    @projects = Project.visible.all(:order => 'lft asc')
   end
 end
