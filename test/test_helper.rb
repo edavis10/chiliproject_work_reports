@@ -102,11 +102,18 @@ class ActiveSupport::TestCase
     @backlog_issue_status ||= IssueStatus.generate!(:name => 'Backlog')
   end
   
+  def finished_issue_status
+    @finished_issue_status ||= IssueStatus.generate!(:name => 'Finished', :is_closed => true)
+  end
+
   def configure_kanban_plugin
     Setting['plugin_redmine_kanban'] = {
       "panes" => {
         "backlog" => {
           "status" => backlog_issue_status.id.to_s
+        },
+        "finished" => {
+          "status" => finished_issue_status.id.to_s
         }
       }
     }

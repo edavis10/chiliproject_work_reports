@@ -63,6 +63,10 @@ module ChiliprojectWorkReports
             nil
           end
         end
+
+        def days_from_statuses(from, to)
+          0
+        end
       end
     end
   end
