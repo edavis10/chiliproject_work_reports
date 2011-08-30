@@ -48,6 +48,13 @@ module ChiliProjectIntegrationTestHelper
     visit url_for(:controller => 'issues', :action => 'bulk_edit', :ids => issues.collect(&:id))
   end
 
+  def visit_work_reports
+    visit_home
+    click_link "Work Reports"
+
+    assert_response :success
+    assert_equal "/work_reports", current_path
+  end
   
   # Capybara doesn't set the response object so we need to glue this to
   # it's own object but without @response
@@ -56,6 +63,8 @@ module ChiliProjectIntegrationTestHelper
     converted_code = case code
                      when :success
                        200
+                     when :forbidden
+                       403
                      when :missing
                        404
                      when :redirect
