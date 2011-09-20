@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/../../../../test_helper'
 
 class ChiliprojectWorkReports::Patches::ProjectTest < ActionController::TestCase
-  context "Project" do
+  context "Project time methods" do
     setup do
       configure_kanban_plugin
       @project = Project.generate!
@@ -127,4 +127,44 @@ class ChiliprojectWorkReports::Patches::ProjectTest < ActionController::TestCase
     end
     
   end
+
+  context "Project issue stats" do
+    context "#incoming_issue_rate" do
+      setup do
+        configure_kanban_plugin
+        @project = Project.generate!
+        @child_project = Project.generate!
+        @child_project.set_parent!(@project)
+
+        @issue1 = create_issue_with_backdated_history(60, :project => @project, :subject => 'Incoming1', :status => incoming_issue_status)
+        @issue2 = create_issue_with_backdated_history(60, :project => @project, :subject => 'Incoming2', :status => incoming_issue_status)
+        @issue3 = create_issue_with_backdated_history(45, :project => @project, :subject => 'Incoming3', :status => incoming_issue_status)
+        @issue4 = create_issue_with_backdated_history(15, :project => @project, :subject => 'Incoming4', :status => incoming_issue_status)
+        @issue5 = create_issue_with_backdated_history(15, :project => @project, :subject => 'Incoming5', :status => incoming_issue_status)
+        update_issue_status_with_backdated_history(@issue1, 5, @finished_issue_status)
+
+      end
+      
+      should "raise an error if the Kanban plugin is not configured" do
+        Setting['plugin_redmine_kanban'] = {}
+        assert_raises ChiliprojectWorkReports::KanbanNotConfiguredError do
+          @project.incoming_issue_rate
+        end
+      end
+      
+      should "raise an error if the Kanban backlog status is not configured" do
+        Setting['plugin_redmine_kanban'] = {"panes" => {}}
+        assert_raises ChiliprojectWorkReports::KanbanNotConfiguredError do
+          @project.incoming_issue_rate
+        end
+      end
+
+      should "return the difference of incoming issues from now and 30 days ago" do
+        # Past: 3 (issue1, issue2, issue3). Now: 4 (issue2, issue3, issue4, issue5)
+        assert_equal 1, @project.incoming_issue_rate
+      end
+    end
+    
+  end
+  
 end

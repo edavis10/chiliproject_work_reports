@@ -113,6 +113,10 @@ class ActiveSupport::TestCase
     Setting['plugin_chiliproject_work_reports'] = Setting['plugin_chiliproject_work_reports'].merge(configuration_change)
   end
 
+  def incoming_issue_status
+    @incoming_issue_status ||= IssueStatus.generate!(:name => 'Incoming')
+  end
+
   def backlog_issue_status
     @backlog_issue_status ||= IssueStatus.generate!(:name => 'Backlog')
   end
@@ -134,6 +138,9 @@ class ActiveSupport::TestCase
       "rollup" => "0",
       "project_level" => "1",
       "panes" => {
+        "incoming" => {
+          "status" => incoming_issue_status.id.to_s
+        },
         "backlog" => {
           "status" => backlog_issue_status.id.to_s
         },

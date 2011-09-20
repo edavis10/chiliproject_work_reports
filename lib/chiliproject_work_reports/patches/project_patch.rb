@@ -50,6 +50,10 @@ module ChiliprojectWorkReports
           @finished_issue_status ||= IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["finished"]["status"])
         end
 
+        def incoming_issue_status
+          @incoming_issue_status ||= IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["incoming"]["status"])
+        end
+
         # Calculate the average number of days issues have spent from Backlog to Finished
         #
         # (Backlog and Finished status are provided from the Kanban configuration)
@@ -76,6 +80,25 @@ module ChiliprojectWorkReports
           return 0 if number_of_issues == 0
           return (total_time / number_of_issues)
         end
+
+        # Calculate the change in issues for the incoming status. Returned as the change:
+        #
+        # Example:
+        # - 2 added issues
+        # - 3 removed issues
+        # - would return -1 (+2-3)
+        # @param [Hash] options the options to use when calculating
+        def incoming_issue_rate(options={})
+          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_incoming_configured?
+          
+          count_of_changes = issues.inject(0) do |counter, issue|
+            # Was changed to incoming, including new issues
+            counter += 1 if issue.last_time_status_changed_to(incoming_issue_status)
+            # Was changed from incoming, lowers the count.
+            counter -= 1 if issue.last_time_status_changed_from(incoming_issue_status)
+            counter
+          end
+        end
         
         private
 
@@ -89,6 +112,10 @@ module ChiliprojectWorkReports
 
         def kanban_backlog_configured?
           ChiliprojectWorkReports::Configuration.kanban_backlog_configured?
+        end
+
+        def kanban_incoming_configured?
+          ChiliprojectWorkReports::Configuration.kanban_incoming_configured?
         end
       end
     end

@@ -27,6 +27,15 @@ module ChiliprojectWorkReports
       end
     end
 
+    def self.kanban_incoming_configured?
+      begin
+        kanban_configured? &&
+          Setting.plugin_redmine_kanban.fetch("panes").fetch("incoming").fetch("status").present?
+      rescue IndexError
+        false
+      end
+    end
+
     def self.kanban_backlog_configured?
       begin
         kanban_configured? &&
