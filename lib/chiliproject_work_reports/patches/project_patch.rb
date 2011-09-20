@@ -80,26 +80,15 @@ module ChiliprojectWorkReports
         private
 
         def kanban_configured?
-          Setting.respond_to?(:plugin_redmine_kanban) &&
-            Setting.plugin_redmine_kanban.present?
+          ChiliprojectWorkReports::Configuration.kanban_configured?
         end
         
         def kanban_finished_configured?
-          begin
-            kanban_configured? &&
-              Setting.plugin_redmine_kanban.fetch("panes").fetch("finished").fetch("status").present?
-          rescue IndexError
-            false
-          end
+          ChiliprojectWorkReports::Configuration.kanban_finished_configured?
         end
 
         def kanban_backlog_configured?
-          begin
-            kanban_configured? &&
-              Setting.plugin_redmine_kanban.fetch("panes").fetch("backlog").fetch("status").present?
-          rescue IndexError
-            false
-          end
+          ChiliprojectWorkReports::Configuration.kanban_backlog_configured?
         end
       end
     end

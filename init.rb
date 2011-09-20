@@ -10,7 +10,7 @@ Redmine::Plugin.register :chiliproject_work_reports do
   author_url 'http://example.com/about'
 
   permission(:view_work_reports, :work_reports => [:index])
-
+  settings(:default => {})
   menu(:top_menu,
        :work_reports,
        {:controller => 'work_reports', :action => 'index'},
