@@ -92,6 +92,12 @@ class ActionController::IntegrationTest
 end
 
 class ActiveSupport::TestCase
+  begin
+    require 'ruby_gc_test_patch'
+    include RubyGcTestPatch
+  rescue LoadError
+  end
+  
   def assert_forbidden
     assert_response :forbidden
     assert_template 'common/403'
