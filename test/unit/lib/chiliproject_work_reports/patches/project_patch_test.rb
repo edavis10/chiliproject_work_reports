@@ -143,6 +143,8 @@ class ChiliprojectWorkReports::Patches::ProjectTest < ActionController::TestCase
         @issue5 = create_issue_with_backdated_history(15, :project => @project, :subject => 'Incoming5', :status => incoming_issue_status)
         update_issue_status_with_backdated_history(@issue1, 5, @finished_issue_status)
 
+        @subproject_issue1 = create_issue_with_backdated_history(15, :project => @child_project, :subject => 'Subproject Incoming1', :status => incoming_issue_status)
+        @subproject_issue2 = create_issue_with_backdated_history(15, :project => @child_project, :subject => 'Subproject Incoming2', :status => incoming_issue_status)
       end
       
       should "raise an error if the Kanban plugin is not configured" do
@@ -162,6 +164,11 @@ class ChiliprojectWorkReports::Patches::ProjectTest < ActionController::TestCase
       should "return the difference of incoming issues from now and 30 days ago" do
         # Past: 3 (issue1, issue2, issue3). Now: 4 (issue2, issue3, issue4, issue5)
         assert_equal 1, @project.incoming_issue_rate
+      end
+
+      should "optionally include issues from the subprojects" do
+        # Past: 3 (issue1, issue2, issue3). Now: 6 (issue2, issue3, issue4, issue5, sub1, sub2)
+        assert_equal 3, @project.incoming_issue_rate(:include_subprojects => true)
       end
     end
     
