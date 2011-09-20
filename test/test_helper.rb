@@ -133,5 +133,25 @@ class ActiveSupport::TestCase
       }
     }
   end
-  
+
+  # Create an issue with backdated historic data
+  #
+  # @param [Hash] attributes Attributes for the issue, :project is required
+  def create_issue_with_backdated_history(created_days_ago, attributes)
+    # Creation
+    issue = nil
+    Timecop.freeze(created_days_ago.days.ago) do
+      issue = Issue.generate_for_project!(attributes.delete(:project), attributes)
+    end
+    issue
+  end
+
+  # Update an issue's history
+  def update_issue_status_with_backdated_history(issue, updated_days_ago, status)
+    Timecop.freeze(updated_days_ago.days.ago) do
+      issue.status = status
+      assert issue.save
+    end
+    issue
+  end
 end

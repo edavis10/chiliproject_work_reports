@@ -11,51 +11,29 @@ class ChiliprojectWorkReports::Patches::ProjectTest < ActionController::TestCase
       @child_child_project.set_parent!(@child_project)
       @project.reload
       @other_status = IssueStatus.generate!
-      Timecop.freeze(60.days.ago) do
-        @issue1 = Issue.generate_for_project!(@project, :subject => 'Over 40')
-        @issue2 = Issue.generate_for_project!(@project, :subject => 'Changed')
-        @issue3 = Issue.generate_for_project!(@project, :subject => 'Still backlog')
-        @child_issue = Issue.generate_for_project!(@child_project, :subject => 'Child')
-        @child_child_issue = Issue.generate_for_project!(@child_child_project, :subject => 'Child child')
-      end
+
+      @issue1 = create_issue_with_backdated_history(60, :project => @project, :subject => 'Over 40')
+      @issue2 = create_issue_with_backdated_history(60, :project => @project, :subject => 'Changed')
+      @issue3 = create_issue_with_backdated_history(60, :project => @project, :subject => 'Still backlog')
+      @child_issue = create_issue_with_backdated_history(60, :project => @child_project, :subject => 'Child')
+      @child_child_issue = create_issue_with_backdated_history(60, :project => @child_child_project, :subject => 'Child child')
+      
       # 40 days ago #1 was set to backlog
-      Timecop.freeze(40.days.ago) do
-        @issue1.status = backlog_issue_status
-        assert @issue1.save
-      end
+      update_issue_status_with_backdated_history(@issue1, 40, backlog_issue_status)
       # 20 days ago #2, #3, #child, and #child_child were set to backlog
-      Timecop.freeze(20.days.ago) do
-        @issue2.status = backlog_issue_status
-        assert @issue2.save
-        @issue3.status = backlog_issue_status
-        assert @issue3.save
-        @child_issue.status = backlog_issue_status
-        assert @child_issue.save
-        @child_child_issue.status = backlog_issue_status
-        assert @child_child_issue.save
-      end
+      update_issue_status_with_backdated_history(@issue2, 20, backlog_issue_status)
+      update_issue_status_with_backdated_history(@issue3, 20, backlog_issue_status)
+      update_issue_status_with_backdated_history(@child_issue, 20, backlog_issue_status)
+      update_issue_status_with_backdated_history(@child_child_issue, 20, backlog_issue_status)
       # 10 days ago #1 was set to finished
-      Timecop.freeze(10.days.ago) do
-        @issue1.status = @finished_issue_status
-        assert @issue1.save
-      end
+      update_issue_status_with_backdated_history(@issue1, 10, @finished_issue_status)
       # 5 days ago #child were set to other status
-      Timecop.freeze(5.days.ago) do
-        @child_issue.status = @other_status
-        assert @child_issue.save
-      end
+      update_issue_status_with_backdated_history(@child_issue, 5, @other_status)
       # 5 days ago #2 and #child_child were set to finished
-      Timecop.freeze(5.days.ago) do
-        @issue2.status = @finished_issue_status
-        assert @issue2.save
-        @child_child_issue.status = @finished_issue_status
-        assert @child_child_issue.save
-      end
+      update_issue_status_with_backdated_history(@issue2, 5, @finished_issue_status)
+      update_issue_status_with_backdated_history(@child_child_issue, 5, @finished_issue_status)
       # 2 days ago #child were set to finished
-      Timecop.freeze(2.days.ago) do
-        @child_issue.status = @finished_issue_status
-        assert @child_issue.save
-      end
+      update_issue_status_with_backdated_history(@child_issue, 2, @finished_issue_status)
       Timecop.return
       # Backlog duration:
       #  #1 => 40-10 = 30 days, started backlog 40 days ago
