@@ -2,6 +2,7 @@ require 'test_helper'
 
 class WorkReportsTest < ActionController::IntegrationTest
   def setup
+    configure_kanban_plugin
     @allowed_user = User.generate!(:password => 'test', :password_confirmation => 'test').reload
     @denied_user = User.generate!(:password => 'test', :password_confirmation => 'test').reload
     @project_one = Project.generate!.reload
@@ -14,10 +15,11 @@ class WorkReportsTest < ActionController::IntegrationTest
   context "when logged in as a user with permission to 'view work reports'" do
     setup do
       login_as(@allowed_user.login, 'test')
-      visit_work_reports
     end
     
     should "see a list of projects" do
+      visit_work_reports
+
       assert find(".projects #project_#{@project_one.id}")
       assert find(".projects #project_#{@project_two.id}")
     end
@@ -25,7 +27,43 @@ class WorkReportsTest < ActionController::IntegrationTest
     should "roll up projects based on the Kanban rollup configuration"
 
     context "project stats" do
-      should "show the Average Completion time, in days"
+      setup do
+        @other_status = IssueStatus.generate!
+
+        @issue1_project_1 = create_issue_with_backdated_history(60, :project => @project_one, :subject => 'Issue1 on Project1')
+        @issue2_project_1 = create_issue_with_backdated_history(60, :project => @project_one, :subject => 'Issue2 on Project1')
+        # Into backlog 20 days ago, moved out 10 days ago, finished 5 days ago
+        update_issue_status_with_backdated_history(@issue1_project_1, 20, backlog_issue_status)
+        update_issue_status_with_backdated_history(@issue1_project_1, 10, @other_status)
+        update_issue_status_with_backdated_history(@issue1_project_1, 5, @finished_issue_status)
+        # Into backlog 10 days ago, finished 5 days ago
+        update_issue_status_with_backdated_history(@issue2_project_1, 10, backlog_issue_status)
+        update_issue_status_with_backdated_history(@issue2_project_1, 5, @finished_issue_status)
+
+        Timecop.return
+      end
+
+      should "show the Backlog Time, in days" do
+        visit_work_reports
+
+        assert find("#project_#{@project_one.id}")
+        within("#project_#{@project_one.id}") do
+          # AVG((20-10), (10-5))
+          assert find(".backlog-time", :text => /7.5/)
+        end
+      end
+      
+      should "show the Average Completion time, in days" do
+        visit_work_reports
+
+        assert find("#project_#{@project_one.id}")
+        within("#project_#{@project_one.id}") do
+          # AVG((20-5), (10-5))
+          assert find(".completion-time", :text => /10/)
+        end
+
+      end
+      
       should "show the Incoming Rate, in issue count"
       should "show the Completion Rate, in issue count"
       should "show the Growth Rate, in issue count"

@@ -1,2 +1,3 @@
 en:
   work_reports_title: "Work Reports"
+  text_days_plural: "%{count} days"
