@@ -36,6 +36,13 @@ module ChiliprojectWorkReports
       end
     end
 
+    def self.kanban_roll_up_projects?
+      kanban_configured? && Setting.plugin_redmine_kanban["rollup"].to_i == 1
+    end
+
+    def self.kanban_roll_up_project_level
+      kanban_configured? && kanban_roll_up_projects? && Setting.plugin_redmine_kanban["project_level"].to_i
+    end
 
   end
 end

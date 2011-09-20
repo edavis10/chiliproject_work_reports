@@ -121,8 +121,18 @@ class ActiveSupport::TestCase
     @finished_issue_status ||= IssueStatus.generate!(:name => 'Finished', :is_closed => true)
   end
 
+  def kanban_enable_rollup_to_level(level)
+    Setting['plugin_redmine_kanban'] =
+      Setting['plugin_redmine_kanban'].merge({
+                                               "rollup" => "1",
+                                               "project_level" => level.to_s
+                                             })
+  end
+
   def configure_kanban_plugin
     Setting['plugin_redmine_kanban'] = {
+      "rollup" => "0",
+      "project_level" => "1",
       "panes" => {
         "backlog" => {
           "status" => backlog_issue_status.id.to_s
