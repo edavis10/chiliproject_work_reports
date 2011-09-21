@@ -32,8 +32,7 @@ module ChiliprojectWorkReports
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless ChiliprojectWorkReports::Configuration.kanban_backlog_configured?
 
           issues_to_check = if options[:include_subprojects]
-                              project_ids = self_and_descendants.collect(&:id)
-                              Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
+                              issues_on_self_and_descendants
                             else
                               issues
                             end
@@ -58,8 +57,7 @@ module ChiliprojectWorkReports
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless ChiliprojectWorkReports::Configuration.kanban_finished_configured?
 
           issues_to_check = if options[:include_subprojects]
-                              project_ids = self_and_descendants.collect(&:id)
-                              Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
+                              issues_on_self_and_descendants
                             else
                               issues
                             end
@@ -88,8 +86,7 @@ module ChiliprojectWorkReports
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless ChiliprojectWorkReports::Configuration.kanban_incoming_configured?
 
           issues_to_check = if options[:include_subprojects]
-                              project_ids = self_and_descendants.collect(&:id)
-                              Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
+                              issues_on_self_and_descendants
                             else
                               issues
                             end
@@ -115,8 +112,7 @@ module ChiliprojectWorkReports
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless ChiliprojectWorkReports::Configuration.kanban_finished_configured?
 
           issues_to_check = if options[:include_subprojects]
-                              project_ids = self_and_descendants.collect(&:id)
-                              Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
+                              issues_on_self_and_descendants
                             else
                               issues
                             end
@@ -144,7 +140,13 @@ module ChiliprojectWorkReports
         def issue_growth_rate(options={})
           incoming_issue_rate(options) - finished_issue_rate(options)
         end
-        
+
+        private
+
+        def issues_on_self_and_descendants
+          project_ids = self_and_descendants.collect(&:id)
+          Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
+        end
       end
     end
   end
