@@ -53,5 +53,23 @@ module ChiliprojectWorkReports
       kanban_configured? && kanban_roll_up_projects? && Setting.plugin_redmine_kanban["project_level"].to_i
     end
 
+    def self.kanban_backlog_issue_status
+      if kanban_backlog_configured?
+        IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["backlog"]["status"])
+      end
+    end
+
+    def self.kanban_finished_issue_status
+      if kanban_finished_configured?
+        IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["finished"]["status"])
+      end
+    end
+    
+    def self.kanban_incoming_issue_status
+      if kanban_incoming_configured?
+        IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["incoming"]["status"])
+      end
+    end
+    
   end
 end

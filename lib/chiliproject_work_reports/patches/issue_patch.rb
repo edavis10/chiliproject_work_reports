@@ -7,6 +7,9 @@ module ChiliprojectWorkReports
         base.send(:include, InstanceMethods)
         base.class_eval do
           unloadable
+          extend ActiveSupport::Memoizable
+          memoize :last_30_days_of_journals_in_reverse
+
         end
       end
 
@@ -14,12 +17,8 @@ module ChiliprojectWorkReports
       end
 
       module InstanceMethods
-        def backlog_issue_status
-          project.backlog_issue_status
-        end
-
         def currently_in_backlog?
-          status == backlog_issue_status
+          status == ChiliprojectWorkReports::Configuration.kanban_backlog_issue_status
         end
 
         def last_30_days_of_journals_in_reverse
@@ -29,14 +28,14 @@ module ChiliprojectWorkReports
         
         # When was this issue last changed into the backlog status?
         def last_time_changed_to_backlog
-          last_time_status_changed_to(backlog_issue_status)
+          last_time_status_changed_to(ChiliprojectWorkReports::Configuration.kanban_backlog_issue_status)
         end
 
         def last_time_changed_from_backlog
           if currently_in_backlog?
             Time.now
           else
-            last_time_status_changed_from(backlog_issue_status)
+            last_time_status_changed_from(ChiliprojectWorkReports::Configuration.kanban_backlog_issue_status)
           end
         end
 
