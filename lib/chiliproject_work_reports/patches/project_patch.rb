@@ -29,7 +29,7 @@ module ChiliprojectWorkReports
         # @option options [bool] :include_subprojects Include issues on subprojects?
         def backlog_time(options={})
           return 0 if issues.count == 0
-          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_backlog_configured?
+          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless ChiliprojectWorkReports::Configuration.kanban_backlog_configured?
 
           issues_to_check = if options[:include_subprojects]
                               project_ids = self_and_descendants.collect(&:id)
@@ -54,8 +54,8 @@ module ChiliprojectWorkReports
         # (Backlog and Finished status are provided from the Kanban configuration)
         def completion_time(options={})
           return 0 if issues.count == 0
-          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_backlog_configured?
-          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_finished_configured?
+          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless ChiliprojectWorkReports::Configuration.kanban_backlog_configured?
+          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless ChiliprojectWorkReports::Configuration.kanban_finished_configured?
 
           issues_to_check = if options[:include_subprojects]
                               project_ids = self_and_descendants.collect(&:id)
@@ -85,7 +85,7 @@ module ChiliprojectWorkReports
         # @param [Hash] options the options to use when calculating
         # @option options [bool] :include_subprojects Include issues on subprojects?
         def incoming_issue_rate(options={})
-          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_incoming_configured?
+          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless ChiliprojectWorkReports::Configuration.kanban_incoming_configured?
 
           issues_to_check = if options[:include_subprojects]
                               project_ids = self_and_descendants.collect(&:id)
@@ -112,7 +112,7 @@ module ChiliprojectWorkReports
         # @param [Hash] options the options to use when calculating
         # @option options [bool] :include_subprojects Include issues on subprojects?
         def finished_issue_rate(options={})
-          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_finished_configured?
+          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless ChiliprojectWorkReports::Configuration.kanban_finished_configured?
 
           issues_to_check = if options[:include_subprojects]
                               project_ids = self_and_descendants.collect(&:id)
@@ -145,23 +145,6 @@ module ChiliprojectWorkReports
           incoming_issue_rate(options) - finished_issue_rate(options)
         end
         
-        private
-
-        def kanban_configured?
-          ChiliprojectWorkReports::Configuration.kanban_configured?
-        end
-        
-        def kanban_finished_configured?
-          ChiliprojectWorkReports::Configuration.kanban_finished_configured?
-        end
-
-        def kanban_backlog_configured?
-          ChiliprojectWorkReports::Configuration.kanban_backlog_configured?
-        end
-
-        def kanban_incoming_configured?
-          ChiliprojectWorkReports::Configuration.kanban_incoming_configured?
-        end
       end
     end
   end
