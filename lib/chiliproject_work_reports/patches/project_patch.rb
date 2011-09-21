@@ -144,7 +144,7 @@ module ChiliprojectWorkReports
         private
 
         def issues_on_self_and_descendants
-          project_ids = self_and_descendants.collect(&:id)
+          project_ids = self_and_descendants.all(:select => 'id').collect(&:id)
           Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
         end
       end
