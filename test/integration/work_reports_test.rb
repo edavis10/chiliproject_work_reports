@@ -98,7 +98,16 @@ class WorkReportsTest < ActionController::IntegrationTest
         end
       end
       
-      should "show the Completion Rate, in issue count"
+      should "show the Completion Rate, in issue count" do
+        visit_work_reports
+
+        assert find("#project_#{@project_one.id}")
+        within("#project_#{@project_one.id}") do
+          # @issue1 added. @issue2 added. @issue1_child added but not rolling up.
+          assert find(".completion-issue-rate", :text => /2/)
+        end
+      end
+
       should "show the Growth Rate, in issue count"
 
       should "roll up subproject stats" do
