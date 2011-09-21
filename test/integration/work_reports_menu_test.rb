@@ -2,6 +2,7 @@ require 'test_helper'
 
 class WorkReportsMenuTest < ActionController::IntegrationTest
   def setup
+    configure_kanban_plugin
     @allowed_user = User.generate!(:password => 'test', :password_confirmation => 'test').reload
     @denied_user = User.generate!(:password => 'test', :password_confirmation => 'test').reload
     @project_one = Project.generate!.reload
