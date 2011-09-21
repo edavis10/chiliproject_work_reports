@@ -24,7 +24,7 @@ module ChiliprojectWorkReports
           return 0 if issues.count == 0
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_backlog_configured?
 
-          issues_to_check = if options.delete(:include_subprojects)
+          issues_to_check = if options[:include_subprojects]
                               project_ids = self_and_descendants.collect(&:id)
                               Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
                             else
@@ -62,7 +62,7 @@ module ChiliprojectWorkReports
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_backlog_configured?
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_finished_configured?
 
-          issues_to_check = if options.delete(:include_subprojects)
+          issues_to_check = if options[:include_subprojects]
                               project_ids = self_and_descendants.collect(&:id)
                               Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
                             else
@@ -92,7 +92,7 @@ module ChiliprojectWorkReports
         def incoming_issue_rate(options={})
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_incoming_configured?
 
-          issues_to_check = if options.delete(:include_subprojects)
+          issues_to_check = if options[:include_subprojects]
                               project_ids = self_and_descendants.collect(&:id)
                               Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
                             else
@@ -119,7 +119,7 @@ module ChiliprojectWorkReports
         def finished_issue_rate(options={})
           raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_finished_configured?
 
-          issues_to_check = if options.delete(:include_subprojects)
+          issues_to_check = if options[:include_subprojects]
                               project_ids = self_and_descendants.collect(&:id)
                               Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
                             else
@@ -135,6 +135,21 @@ module ChiliprojectWorkReports
           end
         end
 
+        # Calculate the issue growth rate for the past 30 days based on the incoming
+        # and finished statuses.
+        #
+        # Example:
+        # - 2 issues added to incoming
+        # - 3 issues removed from incoming
+        # - 1 issue added to finished
+        # - 2 issues removed from finished
+        # - would return 0 = ((2-3) - (1-2))
+        # @param [Hash] options the options to use when calculating
+        # @option options [bool] :include_subprojects Include issues on subprojects?
+        def issue_growth_rate(options={})
+          incoming_issue_rate(options) - finished_issue_rate(options)
+        end
+        
         private
 
         def kanban_configured?

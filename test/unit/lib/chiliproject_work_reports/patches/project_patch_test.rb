@@ -215,6 +215,55 @@ class ChiliprojectWorkReports::Patches::ProjectTest < ActionController::TestCase
       end
     end
 
+    context "#issue_growth_rate" do
+      setup do
+        configure_kanban_plugin
+        @project = Project.generate!
+        @child_project = Project.generate!
+        @child_project.set_parent!(@project)
+
+
+        @issue1 = create_issue_with_backdated_history(60, :project => @project, :subject => 'Incoming1', :status => incoming_issue_status)
+        @issue2 = create_issue_with_backdated_history(60, :project => @project, :subject => 'Incoming2', :status => incoming_issue_status)
+        @issue3 = create_issue_with_backdated_history(45, :project => @project, :subject => 'Incoming3', :status => incoming_issue_status)
+        @issue4 = create_issue_with_backdated_history(15, :project => @project, :subject => 'Incoming4', :status => incoming_issue_status) # +1 In
+        @issue5 = create_issue_with_backdated_history(15, :project => @project, :subject => 'Incoming5', :status => incoming_issue_status) # +1 In
+        update_issue_status_with_backdated_history(@issue4, 5, backlog_issue_status) # -1 In
+
+        @issue6 = create_issue_with_backdated_history(15, :project => @project, :subject => 'Finished6', :status => finished_issue_status) # +1 Fin
+        update_issue_status_with_backdated_history(@issue6, 5, backlog_issue_status) # -1 Fin
+        
+        @subproject_issue1 = create_issue_with_backdated_history(15, :project => @child_project, :subject => 'Subproject Incoming1', :status => incoming_issue_status) # +1 In
+        @subproject_issue2 = create_issue_with_backdated_history(15, :project => @child_project, :subject => 'Subproject Incoming2', :status => incoming_issue_status) # +1 In
+        @subproject_issue3 = create_issue_with_backdated_history(15, :project => @child_project, :subject => 'Subproject Finished3', :status => finished_issue_status) # +1 Fin
+        @subproject_issue4 = create_issue_with_backdated_history(15, :project => @child_project, :subject => 'Subproject Finished4', :status => finished_issue_status) # +1 Fin        
+        update_issue_status_with_backdated_history(@subproject_issue4, 5, backlog_issue_status) # -1 Fin
+      end
+      
+      should "raise an error if the Kanban plugin is not configured" do
+        Setting['plugin_redmine_kanban'] = {}
+        assert_raises ChiliprojectWorkReports::KanbanNotConfiguredError do
+          @project.issue_growth_rate
+        end
+      end
+      
+      should "raise an error if the Kanban finished status is not configured" do
+        Setting['plugin_redmine_kanban'] = {"panes" => {}}
+        assert_raises ChiliprojectWorkReports::KanbanNotConfiguredError do
+          @project.issue_growth_rate
+        end
+      end
+
+      should "return the difference of incoming issues and finished between now and 30 days ago" do
+        # In: (+2 -1) - Finish: (+1-1) = 1
+        assert_equal 1, @project.issue_growth_rate
+      end
+
+      should "optionally include issues from the subprojects" do
+        # In: (+4 -1) - Finish: (+3-2) = 2
+        assert_equal 2, @project.issue_growth_rate(:include_subprojects => true)
+      end
+    end
   end
   
 end
