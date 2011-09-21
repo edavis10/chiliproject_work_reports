@@ -3,9 +3,13 @@
 
 <div class="projects">
   <% @projects.each do |project| %>
-    <div id="project_<%= project.id -%>">
+    <div id="project_<%= project.id -%>" style="clear:both;">
       <h2><%= h(project.name) %></h2>
       
+      <div class="graph" style="float:right";>
+        <%= tag("embed", :width => 400, :height => 300, :type => "image/svg+xml", :src => url_for(:controller => 'work_reports', :action => 'graph', :project_id => project)) %>
+      </div>
+
       <ul>
         <li class="backlog-time">Backlog time: <%= format_days(project.backlog_time(:include_subprojects => ChiliprojectWorkReports::Configuration.kanban_roll_up_projects?)) %></li>
         <li class="completion-time">Completion time: <%= format_days(project.completion_time(:include_subprojects => ChiliprojectWorkReports::Configuration.kanban_roll_up_projects?)) %></li>
