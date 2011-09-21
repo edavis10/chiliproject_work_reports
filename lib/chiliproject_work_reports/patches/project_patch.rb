@@ -13,7 +13,7 @@ module ChiliprojectWorkReports
           memoize :completion_time
           memoize :incoming_issue_rate
           memoize :finished_issue_rate
-
+          memoize :issues_on_self_and_descendants
         end
       end
 
