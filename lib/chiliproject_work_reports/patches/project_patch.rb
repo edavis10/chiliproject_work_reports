@@ -108,6 +108,33 @@ module ChiliprojectWorkReports
           end
         end
         
+        # Calculate the change in issues for the finished status. Returned as the change:
+        #
+        # Example:
+        # - 2 added issues
+        # - 3 removed issues
+        # - would return -1 (+2-3)
+        # @param [Hash] options the options to use when calculating
+        # @option options [bool] :include_subprojects Include issues on subprojects?
+        def finished_issue_rate(options={})
+          raise ChiliprojectWorkReports::KanbanNotConfiguredError unless kanban_finished_configured?
+
+          issues_to_check = if options.delete(:include_subprojects)
+                              project_ids = self_and_descendants.collect(&:id)
+                              Issue.all(:conditions => ["#{Issue.table_name}.project_id IN (?)", project_ids])
+                            else
+                              issues
+                            end
+
+          count_of_changes = issues_to_check.inject(0) do |counter, issue|
+            # Was changed to incoming, including new issues
+            counter += 1 if issue.last_time_status_changed_to(finished_issue_status)
+            # Was changed from incoming, lowers the count.
+            counter -= 1 if issue.last_time_status_changed_from(finished_issue_status)
+            counter
+          end
+        end
+
         private
 
         def kanban_configured?

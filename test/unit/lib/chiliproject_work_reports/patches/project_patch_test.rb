@@ -154,7 +154,7 @@ class ChiliprojectWorkReports::Patches::ProjectTest < ActionController::TestCase
         end
       end
       
-      should "raise an error if the Kanban backlog status is not configured" do
+      should "raise an error if the Kanban incoming status is not configured" do
         Setting['plugin_redmine_kanban'] = {"panes" => {}}
         assert_raises ChiliprojectWorkReports::KanbanNotConfiguredError do
           @project.incoming_issue_rate
@@ -171,7 +171,50 @@ class ChiliprojectWorkReports::Patches::ProjectTest < ActionController::TestCase
         assert_equal 3, @project.incoming_issue_rate(:include_subprojects => true)
       end
     end
-    
+
+    context "#finished_issue_rate" do
+      setup do
+        configure_kanban_plugin
+        @project = Project.generate!
+        @child_project = Project.generate!
+        @child_project.set_parent!(@project)
+
+        @issue1 = create_issue_with_backdated_history(60, :project => @project, :subject => 'Finished1', :status => finished_issue_status)
+        @issue2 = create_issue_with_backdated_history(60, :project => @project, :subject => 'Finished2', :status => finished_issue_status)
+        @issue3 = create_issue_with_backdated_history(45, :project => @project, :subject => 'Finished3', :status => finished_issue_status)
+        @issue4 = create_issue_with_backdated_history(15, :project => @project, :subject => 'Finished4', :status => finished_issue_status)
+        @issue5 = create_issue_with_backdated_history(15, :project => @project, :subject => 'Finished5', :status => finished_issue_status)
+        update_issue_status_with_backdated_history(@issue1, 5, backlog_issue_status)
+
+        @subproject_issue1 = create_issue_with_backdated_history(15, :project => @child_project, :subject => 'Subproject Finished1', :status => finished_issue_status)
+        @subproject_issue2 = create_issue_with_backdated_history(15, :project => @child_project, :subject => 'Subproject Finished2', :status => finished_issue_status)
+      end
+      
+      should "raise an error if the Kanban plugin is not configured" do
+        Setting['plugin_redmine_kanban'] = {}
+        assert_raises ChiliprojectWorkReports::KanbanNotConfiguredError do
+          @project.finished_issue_rate
+        end
+      end
+      
+      should "raise an error if the Kanban finished status is not configured" do
+        Setting['plugin_redmine_kanban'] = {"panes" => {}}
+        assert_raises ChiliprojectWorkReports::KanbanNotConfiguredError do
+          @project.finished_issue_rate
+        end
+      end
+
+      should "return the difference of finished issues from now and 30 days ago" do
+        # -issue1, +issue4, +issue5
+        assert_equal 1, @project.finished_issue_rate
+      end
+
+      should "optionally include issues from the subprojects" do
+        # -issue1, +issue4, +issue5, +sub1, +sub2
+        assert_equal 3, @project.finished_issue_rate(:include_subprojects => true)
+      end
+    end
+
   end
   
 end
