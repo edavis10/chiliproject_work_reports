@@ -11,6 +11,7 @@
         <li class="completion-time">Completion time: <%= format_days(project.completion_time(:include_subprojects => ChiliprojectWorkReports::Configuration.kanban_roll_up_projects?)) %></li>
         <li class="incoming-issue-rate">Incoming rate: <%= h(project.incoming_issue_rate(:include_subprojects => ChiliprojectWorkReports::Configuration.kanban_roll_up_projects?)) %></li>
         <li class="completion-issue-rate">Completion rate: <%= h(project.finished_issue_rate(:include_subprojects => ChiliprojectWorkReports::Configuration.kanban_roll_up_projects?)) %></li>
+        <li class="issue-growth-rate">Issue growth rate: <%= h(project.issue_growth_rate(:include_subprojects => ChiliprojectWorkReports::Configuration.kanban_roll_up_projects?)) %></li>
       </ul>
     </div>
   <% end %>

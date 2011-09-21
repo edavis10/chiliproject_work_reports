@@ -108,7 +108,14 @@ class WorkReportsTest < ActionController::IntegrationTest
         end
       end
 
-      should "show the Growth Rate, in issue count"
+      should "show the Growth Rate, in issue count" do
+        visit_work_reports
+
+        assert find("#project_#{@project_one.id}")
+        within("#project_#{@project_one.id}") do
+          assert find(".issue-growth-rate", :text => /-3/)
+        end
+      end
 
       should "roll up subproject stats" do
         kanban_enable_rollup_to_level(1)
