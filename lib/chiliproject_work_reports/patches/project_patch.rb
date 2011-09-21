@@ -7,6 +7,13 @@ module ChiliprojectWorkReports
         base.send(:include, InstanceMethods)
         base.class_eval do
           unloadable
+          extend ActiveSupport::Memoizable
+          # TODO: memoizes the options param too
+          memoize :backlog_time
+          memoize :completion_time
+          memoize :incoming_issue_rate
+          memoize :finished_issue_rate
+
         end
       end
 
