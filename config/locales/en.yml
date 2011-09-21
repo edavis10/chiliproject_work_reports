@@ -1,3 +1,5 @@
 en:
   work_reports_title: "Work Reports"
   text_days_plural: "%{count} days"
+  text_kanban_configuration_required: "Kanban Configuration Required"
+  text_kanban_configuration_help: "This report requires the Kanban plugin to be installed and configured. Please configure it in the Administration panel."

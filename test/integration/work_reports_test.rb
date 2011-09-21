@@ -23,6 +23,15 @@ class WorkReportsTest < ActionController::IntegrationTest
     setup do
       login_as(@allowed_user.login, 'test')
     end
+
+    should "without Kanban configured should show a friendly error message" do
+      Setting['plugin_redmine_kanban'] = {}
+      visit_home
+      click_link "Work Reports"
+
+      assert_response 500
+      assert has_content?("Kanban Configuration Required")
+    end
     
     should "see a list of projects with no rollup" do
       visit_work_reports
