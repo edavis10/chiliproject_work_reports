@@ -7,6 +7,9 @@ module ChiliprojectWorkReports
         base.send(:include, InstanceMethods)
         base.class_eval do
           unloadable
+          extend ActiveSupport::Memoizable
+          memoize :last_30_days_of_journals_in_reverse
+
         end
       end
 
