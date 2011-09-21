@@ -49,18 +49,6 @@ module ChiliprojectWorkReports
           return (total_time / number_of_issues)
         end
 
-        def backlog_issue_status
-          @backlog_issue_status ||= IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["backlog"]["status"])
-        end
-
-        def finished_issue_status
-          @finished_issue_status ||= IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["finished"]["status"])
-        end
-
-        def incoming_issue_status
-          @incoming_issue_status ||= IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["incoming"]["status"])
-        end
-
         # Calculate the average number of days issues have spent from Backlog to Finished
         #
         # (Backlog and Finished status are provided from the Kanban configuration)
@@ -77,7 +65,7 @@ module ChiliprojectWorkReports
                             end
 
           completion_durations = issues_to_check.inject([]) do |time_spans, issue|
-            time_span = issue.days_from_statuses(backlog_issue_status, finished_issue_status)
+            time_span = issue.days_from_statuses(ChiliprojectWorkReports::Configuration.kanban_backlog_issue_status, ChiliprojectWorkReports::Configuration.kanban_finished_issue_status)
             time_spans << time_span unless time_span.nil?
             time_spans
           end
@@ -108,9 +96,9 @@ module ChiliprojectWorkReports
 
           count_of_changes = issues_to_check.inject(0) do |counter, issue|
             # Was changed to incoming, including new issues
-            counter += 1 if issue.last_time_status_changed_to(incoming_issue_status)
+            counter += 1 if issue.last_time_status_changed_to(ChiliprojectWorkReports::Configuration.kanban_incoming_issue_status)
             # Was changed from incoming, lowers the count.
-            counter -= 1 if issue.last_time_status_changed_from(incoming_issue_status)
+            counter -= 1 if issue.last_time_status_changed_from(ChiliprojectWorkReports::Configuration.kanban_incoming_issue_status)
             counter
           end
         end
@@ -135,9 +123,9 @@ module ChiliprojectWorkReports
 
           count_of_changes = issues_to_check.inject(0) do |counter, issue|
             # Was changed to incoming, including new issues
-            counter += 1 if issue.last_time_status_changed_to(finished_issue_status)
+            counter += 1 if issue.last_time_status_changed_to(ChiliprojectWorkReports::Configuration.kanban_finished_issue_status)
             # Was changed from incoming, lowers the count.
-            counter -= 1 if issue.last_time_status_changed_from(finished_issue_status)
+            counter -= 1 if issue.last_time_status_changed_from(ChiliprojectWorkReports::Configuration.kanban_finished_issue_status)
             counter
           end
         end
