@@ -22,6 +22,13 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
                                          :x_label_format => "%Y-%m"
                                        })
 
+    stack_data_values([
+                       finished_count,
+                       testing_count,
+                       active_count,
+                       selected_count,
+                       backlog_count
+                      ])
     graph.add_data({
                      :title => 'backlog issues',
                      :data => convert_hash_of_dates_and_counts_to_svg_array(backlog_count)
@@ -123,4 +130,21 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
     end
     months
   end
+
+  def stack_data_values(stack)
+    previous_data = nil
+    stack.each do |current_data|
+      if previous_data.nil? # First item in stack
+        previous_data = current_data
+        next
+      end
+
+      current_data.each do |date_key, count|
+        current_data[date_key] += previous_data[date_key]
+      end
+
+      previous_data = current_data
+    end
+  end
+  
 end
