@@ -115,6 +115,21 @@ class ActiveSupport::TestCase
     # SVG is creating two text elements per data point
     assert_equal count * 2, matching_elements.length
   end
+
+  def assert_svg_has_data_point_on_line(nokogiri_doc, options={})
+    line_number = options[:line_number]
+    series = options[:series]
+    value = options[:value]
+
+    data_point = nokogiri_doc.css("svg circle.dataPoint#{line_number}")[series]
+    assert data_point, "Data point circle not found"
+    y = data_point["cy"]
+    x = data_point["cx"]
+    y = y.to_f - 6 # labels are offset a bit above data point
+    data_point_label = nokogiri_doc.css("svg text.dataPointLabel[x='#{x}'][y='#{y}']").try(:first)
+    assert data_point_label, "Data point label not found"
+    assert_equal value.to_s, data_point_label.content.strip, "Data point content not matching"
+  end
   
   def configure_plugin(configuration_change={})
     Setting.plugin_TODO = {
@@ -134,6 +149,18 @@ class ActiveSupport::TestCase
     @backlog_issue_status ||= IssueStatus.generate!(:name => 'Backlog')
   end
   
+  def issue_status_for_testing # T::U name conflict as testing_issue_status
+    @testing_issue_status ||= IssueStatus.generate!(:name => 'Testing')
+  end
+
+  def active_issue_status
+    @active_issue_status ||= IssueStatus.generate!(:name => 'Active')
+  end
+
+  def selected_issue_status
+    @selected_issue_status ||= IssueStatus.generate!(:name => 'Selected')
+  end
+
   def finished_issue_status
     @finished_issue_status ||= IssueStatus.generate!(:name => 'Finished', :is_closed => true)
   end
@@ -156,6 +183,15 @@ class ActiveSupport::TestCase
         },
         "backlog" => {
           "status" => backlog_issue_status.id.to_s
+        },
+        "selected" => {
+          "status" => selected_issue_status.id.to_s
+        },
+        "active" => {
+          "status" => active_issue_status.id.to_s
+        },
+        "testing" => {
+          "status" => issue_status_for_testing.id.to_s
         },
         "finished" => {
           "status" => finished_issue_status.id.to_s
