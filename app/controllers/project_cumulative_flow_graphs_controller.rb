@@ -6,11 +6,6 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
   before_filter :authorize
 
   def show
-    months = []
-    12.times do |increment|
-      months << (1.year.ago.beginning_of_month + increment.months).to_date
-    end
-
     finished_count = months.inject({}) do |counter, date|
       start_date = date.beginning_of_month.to_datetime
       end_date = start_date + 1.month - 1.second
@@ -38,16 +33,7 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
         end
       end
 
-      # Fetch previous month's value to build on
-      current_position = months.index(date)
-      if current_position
-        previous_position = current_position - 1
-        previous_position_date = months[previous_position]
-        # Copy previous month's value over
-        counter[date] = counter[previous_position_date] if previous_position_date
-      end
-      
-      counter[date] ||= 0
+      counter[date] = starting_count_for_month(date, counter)
       issue_map.each do |issue_id, change|
         case change
         when :from
@@ -83,5 +69,30 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
 
     headers["Content-Type"] = "image/svg+xml"
     send_data(graph.burn, :type => "image/svg+xml", :disposition => "inline")
+  end
+
+  private
+
+  def starting_count_for_month(date, month_counter)
+    # Fetch previous month's value to build on
+    current_position = months.index(date)
+    if current_position
+      previous_position = current_position - 1
+      previous_position_date = months[previous_position]
+      # Copy previous month's value over
+      if previous_position_date && month_counter[previous_position_date].present?
+        return month_counter[previous_position_date]
+      end
+    end
+      
+    return 0
+  end
+
+  def months
+    months = []
+    12.times do |increment|
+      months << (1.year.ago.beginning_of_month + increment.months).to_date
+    end
+    months
   end
 end
