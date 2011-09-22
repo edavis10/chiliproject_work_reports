@@ -7,6 +7,11 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
 
   def show
     finished_count = count_of_issues_in_status_by_month(ChiliprojectWorkReports::Configuration.kanban_finished_issue_status)
+    testing_count = count_of_issues_in_status_by_month(ChiliprojectWorkReports::Configuration.kanban_testing_issue_status)
+    active_count = count_of_issues_in_status_by_month(ChiliprojectWorkReports::Configuration.kanban_active_issue_status)
+    selected_count = count_of_issues_in_status_by_month(ChiliprojectWorkReports::Configuration.kanban_selected_issue_status)
+    backlog_count = count_of_issues_in_status_by_month(ChiliprojectWorkReports::Configuration.kanban_backlog_issue_status)
+    
 
     graph = SVG::Graph::TimeSeries.new({
                                          :height => 300,
@@ -17,6 +22,22 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
                                          :x_label_format => "%Y-%m"
                                        })
 
+    graph.add_data({
+                     :title => 'backlog issues',
+                     :data => convert_hash_of_dates_and_counts_to_svg_array(backlog_count)
+                   })
+    graph.add_data({
+                     :title => 'selected issues',
+                     :data => convert_hash_of_dates_and_counts_to_svg_array(selected_count)
+                   })
+    graph.add_data({
+                     :title => 'active issues',
+                     :data => convert_hash_of_dates_and_counts_to_svg_array(active_count)
+                   })
+    graph.add_data({
+                     :title => 'testing issues',
+                     :data => convert_hash_of_dates_and_counts_to_svg_array(testing_count)
+                   })
     graph.add_data({
                      :title => 'finished issues',
                      :data => convert_hash_of_dates_and_counts_to_svg_array(finished_count)

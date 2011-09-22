@@ -45,6 +45,33 @@ module ChiliprojectWorkReports
       end
     end
 
+    def self.kanban_testing_configured?
+      begin
+        kanban_configured? &&
+          Setting.plugin_redmine_kanban.fetch("panes").fetch("testing").fetch("status").present?
+      rescue IndexError
+        false
+      end
+    end
+
+    def self.kanban_active_configured?
+      begin
+        kanban_configured? &&
+          Setting.plugin_redmine_kanban.fetch("panes").fetch("active").fetch("status").present?
+      rescue IndexError
+        false
+      end
+    end
+
+    def self.kanban_selected_configured?
+      begin
+        kanban_configured? &&
+          Setting.plugin_redmine_kanban.fetch("panes").fetch("selected").fetch("status").present?
+      rescue IndexError
+        false
+      end
+    end
+
     def self.kanban_roll_up_projects?
       kanban_configured? && Setting.plugin_redmine_kanban["rollup"].to_i == 1
     end
@@ -56,6 +83,24 @@ module ChiliprojectWorkReports
     def self.kanban_backlog_issue_status
       if kanban_backlog_configured?
         IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["backlog"]["status"])
+      end
+    end
+
+    def self.kanban_testing_issue_status
+      if kanban_testing_configured?
+        IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["testing"]["status"])
+      end
+    end
+
+    def self.kanban_active_issue_status
+      if kanban_testing_configured?
+        IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["active"]["status"])
+      end
+    end
+
+    def self.kanban_selected_issue_status
+      if kanban_testing_configured?
+        IssueStatus.find(Setting.plugin_redmine_kanban["panes"]["selected"]["status"])
       end
     end
 
