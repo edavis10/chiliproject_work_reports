@@ -17,16 +17,9 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
                                          :x_label_format => "%Y-%m"
                                        })
 
-    # Sort hash data to a format for SVG: [first_date, first_date_value, second_date, second_date_value..]
-    finished_issues_for_svg = finished_count.sort_by {|k,v| k }.inject([]) do |acc, data_item|
-                       acc << data_item.first.strftime("%Y-%m-%d") # date
-                       acc << data_item.second # value
-                       acc
-    end
-
     graph.add_data({
                      :title => 'finished issues',
-                     :data => finished_issues_for_svg
+                     :data => convert_hash_of_dates_and_counts_to_svg_array(finished_count)
                    })
 
     headers["Content-Type"] = "image/svg+xml"
@@ -77,6 +70,16 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
     end
   end
 
+  # Sort hash data to a format for SVG:
+  # [first_date, first_date_value, second_date, second_date_value..]
+  def convert_hash_of_dates_and_counts_to_svg_array(hash)
+    hash.sort_by {|k,v| k }.inject([]) do |acc, data_item|
+      acc << data_item.first.strftime("%Y-%m-%d") # date
+      acc << data_item.second # value
+      acc
+    end
+  end
+  
   def starting_count_for_month(date, month_counter)
     # Fetch previous month's value to build on
     current_position = months.index(date)
