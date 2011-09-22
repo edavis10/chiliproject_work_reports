@@ -58,22 +58,33 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
 
   private
 
+  def issue_journal_data
+    unless @issue_journal_data.present?
+      @issue_journal_data = months.inject({}) do |journal_data, month|
+        start_date = month.beginning_of_month.to_datetime
+        end_date = start_date + 1.month - 1.second
+
+        # Order by creation date so changes later in the month override previous ones
+        journal_data[month] = IssueJournal.all(:conditions => ["journaled_id IN (:issue_ids) AND created_at > :start_date AND created_at < :end_date AND changes LIKE (:status)",
+                                         {
+                                           :issue_ids => @project.issues.collect(&:id),
+                                           :start_date => start_date,
+                                           :end_date => end_date,
+                                           :status => '%status%'
+                                         }],
+                         :order => "created_at asc")
+        journal_data
+      end
+      
+    end
+    @issue_journal_data
+  end
+
   def count_of_issues_in_status_by_month(status)
     counts = months.inject({}) do |counter, date|
-      start_date = date.beginning_of_month.to_datetime
-      end_date = start_date + 1.month - 1.second
-
       # Map of issue_ids and if they changed from or to a status.
       issue_map = {}
-      # Order by creation date so changes later in the month override previous ones
-      IssueJournal.all(:conditions => ["journaled_id IN (:issue_ids) AND created_at > :start_date AND created_at < :end_date AND changes LIKE (:status)",
-                                       {
-                                         :issue_ids => @project.issues.collect(&:id),
-                                         :start_date => start_date,
-                                         :end_date => end_date,
-                                         :status => '%status%'
-                                       }],
-                       :order => "created_at asc").each do |journal|
+      issue_journal_data[date].each do |journal|
         next unless journal.changes["status_id"].present?
 
         # Change to incoming
