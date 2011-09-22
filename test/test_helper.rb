@@ -80,7 +80,9 @@ module ChiliProjectIntegrationTestHelper
     assert_equal converted_code, page.status_code
   end
 
-  
+  def assert_content_type(expected)
+    assert_equal expected, page.response_headers['Content-Type']
+  end
 
 end
 
@@ -155,9 +157,16 @@ class ActiveSupport::TestCase
   #
   # @param [Hash] attributes Attributes for the issue, :project is required
   def create_issue_with_backdated_history(created_days_ago, attributes)
+    create_issue_with_backdated_history_at(created_days_ago.days.ago, attributes)
+  end
+
+  # Create an issue with backdated historic data at a specific date
+  #
+  # @param [Hash] attributes Attributes for the issue, :project is required
+  def create_issue_with_backdated_history_at(creation_date, attributes)
     # Creation
     issue = nil
-    Timecop.freeze(created_days_ago.days.ago) do
+    Timecop.freeze(creation_date) do
       issue = Issue.generate_for_project!(attributes.delete(:project), attributes)
     end
     issue
