@@ -32,23 +32,23 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
                        backlog_count
                       ])
     graph.add_data({
-                     :title => 'backlog issues',
+                     :title => l(:kanban_text_backlog),
                      :data => convert_hash_of_dates_and_counts_to_svg_array(backlog_count)
                    })
     graph.add_data({
-                     :title => 'selected issues',
+                     :title => l(:kanban_text_selected),
                      :data => convert_hash_of_dates_and_counts_to_svg_array(selected_count)
                    })
     graph.add_data({
-                     :title => 'active issues',
+                     :title => l(:kanban_text_active),
                      :data => convert_hash_of_dates_and_counts_to_svg_array(active_count)
                    })
     graph.add_data({
-                     :title => 'testing issues',
+                     :title => l(:kanban_text_testing),
                      :data => convert_hash_of_dates_and_counts_to_svg_array(testing_count)
                    })
     graph.add_data({
-                     :title => 'finished issues',
+                     :title => l(:kanban_text_finished_requests),
                      :data => convert_hash_of_dates_and_counts_to_svg_array(finished_count)
                    })
 
