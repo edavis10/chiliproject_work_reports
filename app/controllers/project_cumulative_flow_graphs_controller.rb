@@ -65,14 +65,14 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
         end_date = start_date + 1.month - 1.second
 
         # Order by creation date so changes later in the month override previous ones
-        journal_data[month] = IssueJournal.all(:conditions => ["journaled_id IN (:issue_ids) AND created_at > :start_date AND created_at < :end_date AND changes LIKE (:status)",
-                                         {
-                                           :issue_ids => @project.issues.collect(&:id),
-                                           :start_date => start_date,
-                                           :end_date => end_date,
-                                           :status => '%status%'
-                                         }],
-                         :order => "created_at asc")
+        query_conditions = ["journaled_id IN (:issue_ids) AND created_at > :start_date AND created_at < :end_date AND changes LIKE (:status)",
+                            {
+                              :issue_ids => @project.issues.collect(&:id),
+                              :start_date => start_date,
+                              :end_date => end_date,
+                              :status => '%status%'
+                            }]
+        journal_data[month] = IssueJournal.all(:order => "created_at asc", :conditions => query_conditions)
         journal_data
       end
       
