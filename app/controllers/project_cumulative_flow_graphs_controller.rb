@@ -14,8 +14,8 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
     
 
     graph = SVG::Graph::TimeSeries.new({
-                                         :height => 300,
-                                         :width => 400,
+                                         :height => 600,
+                                         :width => 1200,
                                          :area_fill => true,
                                          :min_y_value => 0,
                                          :stagger_x_labels => true,
