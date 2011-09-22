@@ -57,7 +57,7 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
   private
 
   def count_of_issues_in_status_by_month(status)
-    months.inject({}) do |counter, date|
+    counts = months.inject({}) do |counter, date|
       start_date = date.beginning_of_month.to_datetime
       end_date = start_date + 1.month - 1.second
 
@@ -96,8 +96,16 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
       end
       counter
     end
+    # TODO: should these be zero'd? I think they should just drag the graph down.
+    zero_any_negative_values(counts)
   end
 
+  def zero_any_negative_values(counts)
+    counts.each do |month, value|
+      counts[month] = 0 if value < 0
+    end
+  end
+  
   # Sort hash data to a format for SVG:
   # [first_date, first_date_value, second_date, second_date_value..]
   def convert_hash_of_dates_and_counts_to_svg_array(hash)
