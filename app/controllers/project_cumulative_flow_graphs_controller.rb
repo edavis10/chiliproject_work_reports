@@ -6,45 +6,7 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
   before_filter :authorize
 
   def show
-    finished_count = months.inject({}) do |counter, date|
-      start_date = date.beginning_of_month.to_datetime
-      end_date = start_date + 1.month - 1.second
-
-      # Map of issue_ids and if they changed from or to a status.
-      issue_map = {}
-      # Order by creation date so changes later in the month override previous ones
-      IssueJournal.all(:conditions => ["journaled_id IN (:issue_ids) AND created_at > :start_date AND created_at < :end_date AND changes LIKE (:status)",
-                                       {
-                                         :issue_ids => @project.issues.collect(&:id),
-                                         :start_date => start_date,
-                                         :end_date => end_date,
-                                         :status => '%status%'
-                                       }],
-                       :order => "created_at asc").each do |journal|
-        next unless journal.changes["status_id"].present?
-
-        # Change to incoming
-        if journal.changes["status_id"].last == ChiliprojectWorkReports::Configuration.kanban_finished_issue_status.id
-          issue_map[journal.journaled_id] = :to
-        end
-        # Change from incoming
-        if journal.changes["status_id"].first == ChiliprojectWorkReports::Configuration.kanban_finished_issue_status.id
-          issue_map[journal.journaled_id] = :from
-        end
-      end
-
-      counter[date] = starting_count_for_month(date, counter)
-      issue_map.each do |issue_id, change|
-        case change
-        when :from
-          counter[date] -= 1
-        when :to
-          counter[date] += 1
-        end
-        
-      end
-      counter
-    end
+    finished_count = count_of_issues_in_status_by_month(ChiliprojectWorkReports::Configuration.kanban_finished_issue_status)
 
     graph = SVG::Graph::TimeSeries.new({
                                          :height => 300,
@@ -72,6 +34,48 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
   end
 
   private
+
+  def count_of_issues_in_status_by_month(status)
+    months.inject({}) do |counter, date|
+      start_date = date.beginning_of_month.to_datetime
+      end_date = start_date + 1.month - 1.second
+
+      # Map of issue_ids and if they changed from or to a status.
+      issue_map = {}
+      # Order by creation date so changes later in the month override previous ones
+      IssueJournal.all(:conditions => ["journaled_id IN (:issue_ids) AND created_at > :start_date AND created_at < :end_date AND changes LIKE (:status)",
+                                       {
+                                         :issue_ids => @project.issues.collect(&:id),
+                                         :start_date => start_date,
+                                         :end_date => end_date,
+                                         :status => '%status%'
+                                       }],
+                       :order => "created_at asc").each do |journal|
+        next unless journal.changes["status_id"].present?
+
+        # Change to incoming
+        if journal.changes["status_id"].last == status.id
+          issue_map[journal.journaled_id] = :to
+        end
+        # Change from incoming
+        if journal.changes["status_id"].first == status.id
+          issue_map[journal.journaled_id] = :from
+        end
+      end
+
+      counter[date] = starting_count_for_month(date, counter)
+      issue_map.each do |issue_id, change|
+        case change
+        when :from
+          counter[date] -= 1
+        when :to
+          counter[date] += 1
+        end
+        
+      end
+      counter
+    end
+  end
 
   def starting_count_for_month(date, month_counter)
     # Fetch previous month's value to build on
