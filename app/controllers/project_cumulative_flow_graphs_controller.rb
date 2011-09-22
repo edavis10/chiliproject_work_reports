@@ -19,7 +19,9 @@ class ProjectCumulativeFlowGraphsController < ApplicationController
                                          :area_fill => true,
                                          :min_y_value => 0,
                                          :stagger_x_labels => true,
-                                         :x_label_format => "%Y-%m"
+                                         :scale_y_integers => true,
+                                         :x_label_format => "%Y-%m",
+                                         :timescale_divisions => '1 months'
                                        })
 
     stack_data_values([
