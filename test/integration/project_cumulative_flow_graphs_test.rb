@@ -34,7 +34,19 @@ class ProjectCumulativeFlowGraphsTest < ActionController::IntegrationTest
     end
     
     # Stacked from bottom
-    should "see dataPointLabels for finished tasks for 12 months"
+    should "see dataPointLabels for finished tasks for 12 months" do
+      get_graph(@project_one)
+      svg = Nokogiri::XML(page.source)
+
+      assert_svg_has_data_point(svg, 1, :count => 2) # Months: 12, 11
+      assert_svg_has_data_point(svg, 2, :count => 2) # Months: 10, 9
+      assert_svg_has_data_point(svg, 3, :count => 2) # Months: 8, 7
+      assert_svg_has_data_point(svg, 4, :count => 2) # Months: 6, 5
+      assert_svg_has_data_point(svg, 5, :count => 2) # Months: 4, 3
+      assert_svg_has_data_point(svg, 6, :count => 2) # Months: 2, 1
+      
+    end
+
     should "see dataPointLabels for testing tasks for 12 months"
     should "see dataPointLabels for active tasks for 12 months"
     should "see dataPointLabels for selected tasks for 12 months"

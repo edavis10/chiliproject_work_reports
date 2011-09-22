@@ -105,6 +105,17 @@ class ActiveSupport::TestCase
     assert_template 'common/403'
   end
 
+  def assert_svg_has_data_point(nokogiri_doc, text, options={})
+    count = options[:count] || 1
+
+    matching_elements = nokogiri_doc.css('svg text.dataPointLabel').select {|element|
+      element.content.strip == text.to_s
+    }
+
+    # SVG is creating two text elements per data point
+    assert_equal count * 2, matching_elements.length
+  end
+  
   def configure_plugin(configuration_change={})
     Setting.plugin_TODO = {
       
